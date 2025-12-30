@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -47,6 +52,31 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        calm: {
+          DEFAULT: "hsl(var(--calm))",
+          foreground: "hsl(var(--calm-foreground))",
+        },
+        "open-time": {
+          DEFAULT: "hsl(var(--open-time))",
+          border: "hsl(var(--open-time-border))",
+        },
+        "fixed-event": {
+          DEFAULT: "hsl(var(--fixed-event))",
+          foreground: "hsl(var(--fixed-event-foreground))",
+        },
+        "placed-task": {
+          DEFAULT: "hsl(var(--placed-task))",
+          border: "hsl(var(--placed-task-border))",
+        },
+        highlight: {
+          DEFAULT: "hsl(var(--highlight))",
+          border: "hsl(var(--highlight-border))",
+        },
+        energy: {
+          low: "hsl(var(--energy-low))",
+          medium: "hsl(var(--energy-medium))",
+          high: "hsl(var(--energy-high))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,20 +95,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
