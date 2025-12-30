@@ -59,6 +59,10 @@
     --energy-low: 25 30% 75%;
     --energy-medium: 35 40% 70%;
     --energy-high: 30 50% 65%;
+    
+    /* Task type colors */
+    --non-negotiable: 25 50% 45%;
+    --growth: 160 40% 40%;
 
     --sidebar-background: 40 25% 96%;
     --sidebar-foreground: 30 10% 30%;
@@ -117,6 +121,10 @@
     --energy-low: 25 20% 35%;
     --energy-medium: 35 25% 40%;
     --energy-high: 30 35% 45%;
+    
+    /* Task type colors */
+    --non-negotiable: 25 55% 55%;
+    --growth: 160 35% 50%;
 
     --sidebar-background: 30 12% 12%;
     --sidebar-foreground: 35 20% 85%;

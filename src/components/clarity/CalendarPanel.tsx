@@ -51,12 +51,17 @@ export function CalendarPanel({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-        <h2 className="text-lg font-medium text-foreground">Today</h2>
-        <span className="text-sm text-muted-foreground ml-auto">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-        </span>
+      <div className="mb-4">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-5 h-5 text-muted-foreground" />
+          <h2 className="text-lg font-medium text-foreground">Today</h2>
+          <span className="text-sm text-muted-foreground ml-auto">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground/70 mt-1 italic">
+          Constraints, not plans
+        </p>
       </div>
       
       <div className="flex-1 relative overflow-y-auto">

@@ -15,6 +15,8 @@ export interface CalendarEvent {
   taskId?: string;
 }
 
+export type TaskType = 'non-negotiable' | 'growth' | 'general';
+
 export interface Task {
   id: string;
   title: string;
@@ -22,6 +24,7 @@ export interface Task {
   deadline: string;
   goalId?: string;
   completed?: boolean;
+  taskType: TaskType;
 }
 
 export interface Recommendation {

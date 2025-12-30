@@ -76,7 +76,10 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Goals Panel */}
           <div className="lg:col-span-3 bg-background rounded-xl border border-border/50 p-6">
-            <GoalsPanel goals={goals} />
+            <GoalsPanel 
+              goals={goals} 
+              highlightedGoalId={recommendation?.task.goalId}
+            />
           </div>
 
           {/* Calendar Panel */}
@@ -91,7 +94,11 @@ const Index = () => {
 
           {/* Tasks Panel */}
           <div className="lg:col-span-4 bg-background rounded-xl border border-border/50 p-6">
-            <TasksPanel tasks={tasks} goals={goals} />
+            <TasksPanel 
+              tasks={tasks} 
+              goals={goals} 
+              highlightedGoalId={recommendation?.task.goalId}
+            />
           </div>
         </div>
       </main>

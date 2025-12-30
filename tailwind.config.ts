@@ -77,6 +77,8 @@ export default {
           medium: "hsl(var(--energy-medium))",
           high: "hsl(var(--energy-high))",
         },
+        "non-negotiable": "hsl(var(--non-negotiable))",
+        growth: "hsl(var(--growth))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

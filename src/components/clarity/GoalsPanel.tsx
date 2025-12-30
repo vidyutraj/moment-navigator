@@ -1,11 +1,13 @@
 import { LongTermGoal } from '@/types/clarity';
 import { Compass } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface GoalsPanelProps {
   goals: LongTermGoal[];
+  highlightedGoalId?: string;
 }
 
-export function GoalsPanel({ goals }: GoalsPanelProps) {
+export function GoalsPanel({ goals, highlightedGoalId }: GoalsPanelProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-2 mb-6">
@@ -18,21 +20,38 @@ export function GoalsPanel({ goals }: GoalsPanelProps) {
       </p>
       
       <div className="space-y-3 flex-1">
-        {goals.map((goal) => (
-          <div
-            key={goal.id}
-            className="p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors"
-          >
-            <h3 className="font-medium text-card-foreground mb-1">
-              {goal.title}
-            </h3>
-            {goal.description && (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {goal.description}
-              </p>
-            )}
-          </div>
-        ))}
+        {goals.map((goal) => {
+          const isHighlighted = goal.id === highlightedGoalId;
+          
+          return (
+            <div
+              key={goal.id}
+              className={cn(
+                "p-4 rounded-lg bg-card border transition-all duration-300",
+                isHighlighted 
+                  ? "border-highlight-border bg-highlight/30 ring-2 ring-highlight-border/40" 
+                  : "border-border/50 hover:border-border"
+              )}
+            >
+              <h3 className={cn(
+                "font-medium mb-1 transition-colors",
+                isHighlighted ? "text-highlight-border" : "text-card-foreground"
+              )}>
+                {goal.title}
+              </h3>
+              {goal.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {goal.description}
+                </p>
+              )}
+              {isHighlighted && (
+                <p className="text-xs text-highlight-border/80 mt-2 font-medium animate-fade-in">
+                  This choice advances this direction
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

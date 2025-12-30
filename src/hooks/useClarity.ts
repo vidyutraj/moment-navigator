@@ -78,16 +78,27 @@ export function useClarity() {
         score += 20; // Longer tasks for high energy
       }
       
-      // Urgency bonus
+    // Urgency bonus
       if (task.deadline.includes('today') || task.deadline.includes('tomorrow')) {
         score += 40;
       } else if (task.deadline.includes('Friday') || task.deadline.includes('this week')) {
         score += 20;
       }
       
-      // Goal-connected tasks get a small bonus
-      if (task.goalId) {
-        score += 15;
+      // Non-negotiable tasks get priority when deadline is near
+      if (task.taskType === 'non-negotiable') {
+        if (task.deadline.includes('today') || task.deadline.includes('tomorrow')) {
+          score += 35; // Strong boost for imminent obligations
+        } else {
+          score += 15; // Moderate boost for other obligations
+        }
+      }
+      
+      // Goal-connected growth tasks get a bonus
+      if (task.goalId && task.taskType === 'growth') {
+        score += 20;
+      } else if (task.goalId) {
+        score += 10;
       }
       
       return { task, score };
@@ -103,12 +114,20 @@ export function useClarity() {
     const taskDuration = Math.min(bestTask.estimatedMinutes, availableMinutes);
     const taskHours = taskDuration / 60;
 
-    // Generate reason
+    // Generate reason based on task type
     let reason = '';
     const relatedGoal = goals.find(g => g.id === bestTask.goalId);
     
-    if (bestTask.deadline.includes('today') || bestTask.deadline.includes('tomorrow')) {
-      reason = `This is ${bestTask.deadline} and fits nicely in your current open time.`;
+    if (bestTask.taskType === 'non-negotiable') {
+      // Non-negotiable: imply necessity without urgency
+      if (bestTask.deadline.includes('today') || bestTask.deadline.includes('tomorrow')) {
+        reason = `A core obligation ${bestTask.deadline}. This fits well in your open time.`;
+      } else {
+        reason = `This is a core commitment approaching its deadline. Good time to make progress.`;
+      }
+    } else if (bestTask.taskType === 'growth' && relatedGoal) {
+      // Growth: imply opportunity
+      reason = `You have space right now to advance "${relatedGoal.title}". A meaningful use of this time.`;
     } else if (relatedGoal) {
       reason = `Supports your goal "${relatedGoal.title}" and matches your ${energy} energy level.`;
     } else if (energy === 'low') {
