@@ -13,6 +13,9 @@ export interface CalendarEvent {
   endHour: number;
   type: 'fixed' | 'placed';
   taskId?: string;
+  date?: string; // ISO date string (YYYY-MM-DD), defaults to today
+  createdAt?: string; // ISO timestamp
+  updatedAt?: string; // ISO timestamp
 }
 
 export type TaskType = 'non-negotiable' | 'growth' | 'general';

@@ -1,15 +1,31 @@
 import { Task, LongTermGoal } from '@/types/clarity';
-import { ListTodo, Clock, Target, Bookmark, Sparkles } from 'lucide-react';
+import { ListTodo, Clock, Target, Bookmark, Sparkles, Pencil, Trash2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface TasksPanelProps {
   tasks: Task[];
   goals: LongTermGoal[];
   highlightedGoalId?: string;
+  onEdit?: (task: Task) => void;
+  onDelete?: (id: string) => Promise<void>;
+  onComplete?: (id: string) => Promise<void>;
 }
 
-export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps) {
+export function TasksPanel({ tasks, goals, highlightedGoalId, onEdit, onDelete, onComplete }: TasksPanelProps) {
   const incompleteTasks = tasks.filter(t => !t.completed);
+
+  const handleDelete = async (id: string) => {
+    if (onDelete && confirm('Are you sure you want to delete this task?')) {
+      await onDelete(id);
+    }
+  };
 
   const getGoalTitle = (goalId?: string) => {
     if (!goalId) return null;
@@ -42,7 +58,15 @@ export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps)
       </p>
       
       <div className="space-y-3 flex-1 overflow-y-auto">
-        {incompleteTasks.map((task) => {
+        {incompleteTasks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <ListTodo className="w-12 h-12 text-muted-foreground/30 mb-4" />
+            <p className="text-sm text-muted-foreground">
+              No tasks at the moment. Take a breath.
+            </p>
+          </div>
+        ) : (
+          incompleteTasks.map((task) => {
           const goalTitle = getGoalTitle(task.goalId);
           const typeInfo = getTaskTypeLabel(task.taskType);
           const isHighlighted = task.goalId && task.goalId === highlightedGoalId;
@@ -51,7 +75,7 @@ export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps)
             <div
               key={task.id}
               className={cn(
-                "p-4 rounded-lg bg-card border transition-all",
+                "group p-4 rounded-lg bg-card border transition-all",
                 task.taskType === 'non-negotiable' 
                   ? "border-non-negotiable/40" 
                   : "border-border/50",
@@ -61,7 +85,7 @@ export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps)
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className={cn(
-                  "text-card-foreground leading-snug",
+                  "text-card-foreground leading-snug flex-1",
                   task.taskType === 'non-negotiable' 
                     ? "font-semibold" 
                     : "font-medium"
@@ -69,17 +93,58 @@ export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps)
                   {task.title}
                 </h3>
                 
-                {typeInfo && (
-                  <span className={cn(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0",
-                    task.taskType === 'non-negotiable' 
-                      ? "bg-non-negotiable/10 text-non-negotiable" 
-                      : "bg-growth/10 text-growth"
-                  )}>
-                    <typeInfo.icon className="w-3 h-3" />
-                    {typeInfo.label}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {typeInfo && (
+                    <span className={cn(
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                      task.taskType === 'non-negotiable' 
+                        ? "bg-non-negotiable/10 text-non-negotiable" 
+                        : "bg-growth/10 text-growth"
+                    )}>
+                      <typeInfo.icon className="w-3 h-3" />
+                      {typeInfo.label}
+                    </span>
+                  )}
+                  {(onEdit || onDelete || onComplete) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="sr-only">Open menu</span>
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                          </svg>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {onComplete && (
+                          <DropdownMenuItem onClick={() => onComplete(task.id)}>
+                            <Check className="mr-2 h-4 w-4" />
+                            Mark Complete
+                          </DropdownMenuItem>
+                        )}
+                        {onEdit && (
+                          <DropdownMenuItem onClick={() => onEdit(task)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(task.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </div>
               
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -114,7 +179,8 @@ export function TasksPanel({ tasks, goals, highlightedGoalId }: TasksPanelProps)
               )}
             </div>
           );
-        })}
+        })
+        )}
       </div>
     </div>
   );
