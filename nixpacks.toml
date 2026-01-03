@@ -1,11 +1,12 @@
-[phases.setup]
-nixPkgs = ["nodejs-18_x", "npm-9_x"]
+[providers]
+node = "18"
 
 [phases.install]
-cmds = ["npm install", "cd server && npm install"]
-
-[phases.build]
-cmds = ["npm run build"]
+dependsOn = ["setup"]
+cmds = [
+  "npm ci",
+  "cd server && npm ci"
+]
 
 [start]
 cmd = "cd server && npm start"
