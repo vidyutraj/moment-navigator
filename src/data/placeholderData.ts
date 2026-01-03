@@ -1,4 +1,4 @@
-import { LongTermGoal, CalendarEvent, Task } from '@/types/clarity';
+import { LongTermGoal, Task } from '@/types/clarity';
 
 export const placeholderGoals: LongTermGoal[] = [
   {
@@ -20,30 +20,6 @@ export const placeholderGoals: LongTermGoal[] = [
     id: 'goal-4',
     title: 'Read more deeply',
     description: 'Fewer articles, more books. Depth over breadth.',
-  },
-];
-
-export const placeholderEvents: CalendarEvent[] = [
-  {
-    id: 'event-1',
-    title: 'Morning standup',
-    startHour: 9,
-    endHour: 9.5,
-    type: 'fixed',
-  },
-  {
-    id: 'event-2',
-    title: 'Lunch break',
-    startHour: 12,
-    endHour: 13,
-    type: 'fixed',
-  },
-  {
-    id: 'event-3',
-    title: 'Team sync',
-    startHour: 15,
-    endHour: 16,
-    type: 'fixed',
   },
 ];
 

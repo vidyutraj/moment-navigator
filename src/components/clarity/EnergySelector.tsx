@@ -15,37 +15,36 @@ const energyOptions: { value: EnergyLevel; label: string; icon: typeof Battery }
 
 export function EnergySelector({ energy, onChange }: EnergySelectorProps) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm text-muted-foreground">Energy:</span>
-      <div className="flex items-center gap-1 bg-muted/50 rounded-full p-1">
-        {energyOptions.map((option) => {
-          const Icon = option.icon;
-          const isActive = energy === option.value;
-          
-          return (
-            <button
-              key={option.value}
-              onClick={() => onChange(option.value)}
+    <div className="flex items-center gap-1.5 bg-background border border-border/50 rounded-lg p-1 shadow-sm">
+      {energyOptions.map((option) => {
+        const Icon = option.icon;
+        const isActive = energy === option.value;
+        
+        return (
+          <button
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all",
+              "hover:bg-muted/30",
+              isActive
+                ? "bg-muted text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Icon 
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all",
-                isActive
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon 
-                className={cn(
-                  "w-4 h-4",
-                  isActive && option.value === 'low' && "text-energy-low",
-                  isActive && option.value === 'medium' && "text-energy-medium",
-                  isActive && option.value === 'high' && "text-energy-high"
-                )} 
-              />
-              <span className="hidden sm:inline">{option.label}</span>
-            </button>
-          );
-        })}
-      </div>
+                "w-5 h-5 transition-colors",
+                isActive && option.value === 'low' && "text-energy-low",
+                isActive && option.value === 'medium' && "text-energy-medium",
+                isActive && option.value === 'high' && "text-energy-high",
+                !isActive && "opacity-50"
+              )} 
+            />
+            <span>{option.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -6,18 +6,6 @@ export interface LongTermGoal {
   description?: string;
 }
 
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  startHour: number;
-  endHour: number;
-  type: 'fixed' | 'placed';
-  taskId?: string;
-  date?: string; // ISO date string (YYYY-MM-DD), defaults to today
-  createdAt?: string; // ISO timestamp
-  updatedAt?: string; // ISO timestamp
-}
-
 export type TaskType = 'non-negotiable' | 'growth' | 'general';
 
 export interface Task {
@@ -28,12 +16,28 @@ export interface Task {
   goalId?: string;
   completed?: boolean;
   taskType: TaskType;
+  inProgress?: boolean; // Local state only, not persisted
 }
 
 export interface Recommendation {
   task: Task;
-  duration: number;
-  reason: string;
-  startHour: number;
-  endHour: number;
+  reasonType: 'core-pressure' | 'growth-opportunity';
+  explanation: string;
+  duration: number; // minutes
+}
+
+/**
+ * TimeWindow represents uninterrupted time available for the current session.
+ * 
+ * DESIGN INVARIANT: Calendar time is a suggestion, not a fact.
+ * User-provided time always wins over calendar-suggested time.
+ * 
+ * This object exists only in local/session state and is never persisted.
+ */
+export interface TimeWindow {
+  startTime: Date;      // Always now (when window was created)
+  endTime: Date;        // User-confirmed end time
+  source: 'user' | 'calendar-suggested' | 'system-default'; // How the end time was determined
+  eventName?: string;   // If calendar-suggested, the name of the event at that time
+  // DESIGN INVARIANT: User-provided time always wins over calendar-suggested or system-default
 }

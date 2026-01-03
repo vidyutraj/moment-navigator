@@ -1,74 +1,57 @@
 import { useState } from 'react';
 import { useClarity } from '@/hooks/useClarity';
-import { CalendarView } from '@/components/clarity/CalendarView';
 import { TasksPanel } from '@/components/clarity/TasksPanel';
+import { GoalsPanel } from '@/components/clarity/GoalsPanel';
 import { EnergySelector } from '@/components/clarity/EnergySelector';
+import { CalendarConnection } from '@/components/clarity/CalendarConnection';
+import { TaskForm } from '@/components/clarity/TaskForm';
+import { GoalForm } from '@/components/clarity/GoalForm';
 import { AskButton } from '@/components/clarity/AskButton';
 import { RecommendationCard } from '@/components/clarity/RecommendationCard';
-import { EventForm } from '@/components/clarity/EventForm';
-import { TaskForm } from '@/components/clarity/TaskForm';
+import { TimeConfirmationDialog } from '@/components/clarity/TimeConfirmationDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
-import { CalendarEvent, Task } from '@/types/clarity';
-import { formatESTDate } from '@/lib/timezone';
+import { Task, LongTermGoal } from '@/types/clarity';
 
 const Index = () => {
   const {
     goals,
-    events,
     tasks,
     energy,
     setEnergy,
+    isLoading,
     recommendation,
     isRecommending,
-    openTimeWindow,
-    currentHour,
-    isLoading,
-    askForRecommendation,
-    acceptRecommendation,
-    suggestAnother,
-    dismissRecommendation,
-    createEvent,
-    updateEvent,
-    deleteEvent,
+    timeWindow,
+    showTimeConfirmation,
+    calendarSuggestedEndTime,
+    calendarEventName,
+    handleTimeConfirmed,
+    cancelTimeConfirmation,
     createTask,
     updateTask,
     deleteTask,
     completeTask,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    askForRecommendation,
+    acceptRecommendation,
+    suggestAnother,
+    dismissRecommendation,
   } = useClarity();
 
   // Form states
-  const [eventFormOpen, setEventFormOpen] = useState(false);
   const [taskFormOpen, setTaskFormOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | undefined>();
+  const [goalFormOpen, setGoalFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
-
-  const handleCreateEvent = () => {
-    setEditingEvent(undefined);
-    setEventFormOpen(true);
-  };
-
-  const handleEditEvent = (event: CalendarEvent) => {
-    setEditingEvent(event);
-    setEventFormOpen(true);
-  };
-
-  const handleEventSubmit = async (eventData: Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (editingEvent && editingEvent.id) {
-      await updateEvent(editingEvent.id, eventData);
-    } else {
-      await createEvent(eventData);
-    }
-    setEventFormOpen(false);
-    setEditingEvent(undefined);
-  };
+  const [editingGoal, setEditingGoal] = useState<LongTermGoal | undefined>();
 
   const handleCreateTask = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log('handleCreateTask called, taskFormOpen will be:', true);
     setEditingTask(undefined);
     setTaskFormOpen(true);
   };
@@ -86,6 +69,26 @@ const Index = () => {
     }
     setTaskFormOpen(false);
     setEditingTask(undefined);
+  };
+
+  const handleCreateGoal = () => {
+    setEditingGoal(undefined);
+    setGoalFormOpen(true);
+  };
+
+  const handleEditGoal = (goal: LongTermGoal) => {
+    setEditingGoal(goal);
+    setGoalFormOpen(true);
+  };
+
+  const handleGoalSubmit = async (goalData: Omit<LongTermGoal, 'id'>) => {
+    if (editingGoal) {
+      await updateGoal(editingGoal.id, goalData);
+    } else {
+      await createGoal(goalData);
+    }
+    setGoalFormOpen(false);
+    setEditingGoal(undefined);
   };
 
   if (isLoading) {
@@ -113,7 +116,7 @@ const Index = () => {
                 Decision relief, not productivity pressure
               </p>
             </div>
-            <EnergySelector energy={energy} onChange={setEnergy} />
+            <CalendarConnection />
           </div>
         </div>
       </header>
@@ -121,23 +124,37 @@ const Index = () => {
       {/* Main action area */}
       <div className="bg-muted/30 border-b border-border/30">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-8">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center space-y-6">
+            {/* Energy selector - prominently placed */}
+            <div className="w-full max-w-md">
+              <div className="flex flex-col items-center gap-3 mb-2">
+                <p className="text-sm font-medium text-foreground">Your energy right now</p>
+                <EnergySelector energy={energy} onChange={setEnergy} />
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  {recommendation 
+                    ? 'Changing energy will update the recommendation' 
+                    : 'This helps match tasks to what you can take on'}
+                </p>
+              </div>
+            </div>
+
+            {/* Recommendation area */}
             {!recommendation ? (
-              <>
+              <div className="flex flex-col items-center gap-4">
                 <AskButton 
                   onClick={askForRecommendation} 
                   isActive={isRecommending}
-                  disabled={!openTimeWindow}
                 />
-                {!openTimeWindow && (
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Your calendar looks full right now. Check back when you have some open time.
+                {tasks.filter(t => !t.completed && !t.inProgress).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No tasks available. Add some tasks to get recommendations.
                   </p>
                 )}
-              </>
+              </div>
             ) : (
               <RecommendationCard
                 recommendation={recommendation}
+                energy={energy}
                 onAccept={acceptRecommendation}
                 onSuggestAnother={suggestAnother}
                 onDismiss={dismissRecommendation}
@@ -149,50 +166,57 @@ const Index = () => {
 
       {/* Main layout */}
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Calendar Panel - Takes most of the space */}
-          <div className="lg:col-span-8 bg-background rounded-xl border border-border/50 p-4 sm:p-6 min-h-[600px] lg:h-[700px] flex flex-col">
-            <CalendarView
-              events={events}
-              currentHour={currentHour}
-              onEventClick={handleEditEvent}
-              onTimeSlotClick={(date, startHour, endHour) => {
-                const tempEvent: CalendarEvent = {
-                  id: '',
-                  title: '',
-                  startHour,
-                  endHour,
-                  type: 'fixed',
-                  date: formatESTDate(date),
-                };
-                setEditingEvent(tempEvent);
-                setEventFormOpen(true);
-              }}
-            />
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Tasks Panel */}
-          <div className="lg:col-span-4 bg-background rounded-xl border border-border/50 p-4 sm:p-6 min-h-[300px] lg:h-[700px] lg:overflow-hidden flex flex-col">
+          <div className="bg-background rounded-xl border border-border/50 p-4 sm:p-6 min-h-[500px] lg:h-[700px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-foreground">Tasks</h2>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={handleCreateTask}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.nativeEvent) {
+                    e.nativeEvent.stopImmediatePropagation();
+                  }
+                  handleCreateTask(e);
+                }}
                 className="gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add
+                Add Task
               </Button>
             </div>
             <TasksPanel 
               tasks={tasks} 
-              goals={goals} 
-              highlightedGoalId={recommendation?.task.goalId}
+              goals={goals}
               onEdit={handleEditTask}
               onDelete={deleteTask}
               onComplete={completeTask}
+            />
+          </div>
+
+          {/* Goals Panel */}
+          <div className="bg-background rounded-xl border border-border/50 p-4 sm:p-6 min-h-[500px] lg:h-[700px] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-foreground">Goals</h2>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleCreateGoal}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Goal
+              </Button>
+            </div>
+            <GoalsPanel 
+              goals={goals}
+              onEdit={handleEditGoal}
+              onDelete={deleteGoal}
             />
           </div>
         </div>
@@ -208,17 +232,8 @@ const Index = () => {
       </footer>
 
       {/* Forms */}
-      <EventForm
-        event={editingEvent}
-        open={eventFormOpen}
-        onOpenChange={(open) => {
-          setEventFormOpen(open);
-          if (!open) setEditingEvent(undefined);
-        }}
-        onSubmit={handleEventSubmit}
-      />
-
       <TaskForm
+        key={editingTask?.id || 'new-task'}
         task={editingTask}
         goals={goals}
         open={taskFormOpen}
@@ -227,6 +242,26 @@ const Index = () => {
           if (!open) setEditingTask(undefined);
         }}
         onSubmit={handleTaskSubmit}
+      />
+
+      <GoalForm
+        goal={editingGoal}
+        open={goalFormOpen}
+        onOpenChange={(open) => {
+          setGoalFormOpen(open);
+          if (!open) setEditingGoal(undefined);
+        }}
+        onSubmit={handleGoalSubmit}
+      />
+
+      {/* Time confirmation dialog */}
+      <TimeConfirmationDialog
+        open={showTimeConfirmation}
+        suggestedEndTime={calendarSuggestedEndTime}
+        suggestedSource={calendarSuggestedEndTime ? 'calendar-suggested' : 'system-default'}
+        eventName={calendarEventName}
+        onConfirm={handleTimeConfirmed}
+        onCancel={cancelTimeConfirmation}
       />
     </div>
   );
